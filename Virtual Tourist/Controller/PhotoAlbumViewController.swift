@@ -98,15 +98,28 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
             photos, error
             in
             if let error = error {
-                print(error)
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
+                    self.present(alert, animated: true)
+                }
             } else {
-                 self.photos.append(contentsOf: photos!.images)
-                 DispatchQueue.main.async {
-                    self.loadingPhotos(false)
-                     self.collectionView.reloadData()
-                 }
-             // this method loops through the photos array which is populated in the completion handler so this needs to be called here otherwise it will run before the completion handler has finished running async
-                 self.getPinImages()
+                if let images = photos?.images {
+                    self.photos.append(contentsOf: images)
+                    DispatchQueue.main.async {
+                       self.loadingPhotos(false)
+                        self.collectionView.reloadData()
+                    }
+                // this method loops through the photos array which is populated in the completion handler so this needs to be called here otherwise it will run before the completion handler has finished running async
+                    self.getPinImages()
+                } else {
+                    DispatchQueue.main.async {
+                        let alert = UIAlertController(title: "Sorry!", message: "No images for selected location", preferredStyle: .alert)
+                        alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
+                        self.present(alert, animated: true)
+                    }
+                }
+  
             }
         }
     }
@@ -114,6 +127,12 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     
     // function to get images url download them as images
     func getPinImages() {
+        if photos.isEmpty {
+            let alert = UIAlertController(title: "Sorry!", message: "No Images for selected location", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
+            self.present(alert, animated: true)
+            return
+        }
         for photo in photos {
             let url = photo.url_n
             // assign this url to each pin in persistent store
@@ -123,7 +142,11 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                     // persistently save the images
                     self.saveImages(data: data)
                 } else {
-                    print("error loading image")
+                    DispatchQueue.main.async {
+                        let alert = UIAlertController(title: "Error", message: "Error loading images", preferredStyle: .alert)
+                        alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
+                        self.present(alert, animated: true)
+                    }
                 }
             }
            
@@ -141,7 +164,9 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
             try DataController.shared.viewContext.save()
             print("images saved")
         } catch {
-            print(error.localizedDescription)
+            let alert = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
+            self.present(alert, animated: true)
         }
     }
     

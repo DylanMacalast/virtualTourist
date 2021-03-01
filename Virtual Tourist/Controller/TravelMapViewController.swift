@@ -162,7 +162,6 @@ extension TravelMapViewController: MKMapViewDelegate {
         // if it matches the pin clicked on by the user
         for pin in self.pins {
             if view.annotation?.coordinate.latitude == pin.lattitude && view.annotation?.coordinate.longitude == pin.longitude {
-                print(pin)
                 let pin: Pin = pin
                 photoVC.pin = pin
             }
